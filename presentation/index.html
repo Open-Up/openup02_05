@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Open Up</title>
+
+		<meta name="description" content="Open Up : Lesson 2 DNS servers">
+		<meta name="author" content="Tellier Benoit">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+	
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+
+
+<section>
+<img data-src="img/large.png"><br/>
+<img data-src="img/openup.png">
+
+<h2>Sharing files</h2>
+
+<p>Speaker : <a>Benoit Tellier</a></p>
+
+<p><small>
+Retrieve this presentation online : <a href="https://rawgit.com/Open-Up/openup02_05/master/presentation/index.html">https://rawgit.com/Open-Up/openup02_05/master/presentation/index.html</a><br/>
+And on <a href="https://github.com/Open-Up/openup02_05/">GitHub</a></small>
+</p>
+</section>
+
+<!--------------------------------------------------
+----------------------------------------------------
+================================================----
+NEW SECTION NEW SECTION NEW SECTION NEW SECTION=----
+================================================----
+----------------------------------------------------
+---------------------------------------------------->
+
+<section>
+<h2>Objectives</h2>
+<ul>
+  <li class="fragment">Discover NFS</li>
+  <li class="fragment">Discover Samba</li>
+</ul>
+</section>
+
+
+<!--------------------------------------------------
+----------------------------------------------------
+================================================----
+NEW SECTION NEW SECTION NEW SECTION NEW SECTION=----
+================================================----
+----------------------------------------------------
+---------------------------------------------------->
+
+<section>
+  <section>
+    <h1>NFS</h1>
+  </section>
+  <section>
+    <h2>NFS</h2>
+	<p> Network file system </p>
+        <p class="fragment"> Contributed by Sun in 1984 </p>
+        <table class="fragment"><thead>
+							<tr>
+								<th>Version</th>
+								<th>RFC</th>
+								<th>Date</th>
+							</tr>
+						</thead><tbody>
+           <tr><td>NFSv2</td><td><a href="http://tools.ietf.org/html/rfc1094">RFC 1094</a></td><td>1989</td></tr>
+               <tr><td>NFSv3</td><td><a href="http://tools.ietf.org/html/rfc1813">RFC 1813</a></td><td>1995</td></tr>
+               <tr><td>NFSv4</td><td><a href="http://tools.ietf.org/html/rfc3530">RFC 3530</a></td><td>2003</td></tr>
+               <tr><td>NFSv4.1</td><td><a href="http://tools.ietf.org/html/rfc5661">RFC 5661</a></td><td>2010</td></tr>
+           
+        </tbody></table>
+	<p class="fragment">Mostly v3 and v4</p>
+        <p class="fragment"><a href="http://fr.wikipedia.org/wiki/Network_File_System">On wikipedia</a></p>
+  </section>
+  <section>
+    <h2>NFS</h2>
+	<p>Installing a NFS server</p>
+        <pre class="fragment"><code>apt-get install nfs-kernel-server portmap</code></pre>
+        <p class="fragment"><b>mountd</b>, <b>nfsd</b> and <b>portmapper</b> daemons</p>
+  </section>
+  <section>
+    <h2>/etc/exports</h2>
+	<p>Defines directory to expose over NFS</p>
+        <pre class="fragment"><code>/net/nfs1    client.example.com(rw)
+/net/nfs2    198.51.100.0/24(rw)
+/net/nfs3    2001:db8::/64(rw)
+/net/ftp     *.example.com(ro)</code></pre>
+        <p class="fragment"><b>exportfs</b> command to take changes into account</p>
+  </section>
+  <section>
+    <h2>exportfs</h2>
+	<p>manage nfs exports</p>
+        <table class="fragment"><thead>
+							<tr>
+								<th>Option</th>
+								<th>effect</th>
+							</tr>
+						</thead><tbody>
+               <tr><td>-a</td><td>All exports</td></tr>
+               <tr><td>-o</td><td>Export option</td></tr>
+               <tr><td>-u</td><td>Delete considered exports (unexports)</td></tr>
+               <tr><td>-r</td><td>Synchronize with /etc/exports</td></tr>
+           
+        </tbody></table>
+  </section>
+  <section>
+    <h2>exportfs examples</h2>
+        <pre class="fragment"><code># Delete all exports
+exportfs -au</code></pre>
+        <pre class="fragment"><code># Reload /etc/erportfs
+exportfs -r</code></pre>
+        <pre class="fragment"><code># Create an export manually
+exportfs -o ro client.example.com:/net/nfs</code></pre>
+  </section>
+  <section>
+    <h2>Showmount</h2>
+        <pre class="fragment"><code># List connected clients
+$ showmount
+Hosts on nfs.example.com:
+client.example.com</code></pre>
+        <pre class="fragment"><code># List server exports
+$ showmount -e nfs.example.com
+Export list for nfs.example.com: /net/nfs 198.51.100.0/255.255.255.0</code></pre>
+  </section>
+  <section>
+    <h2>nfsstat</h2>
+        <pre><code>root@spirit:/home/benwa# nfsstat 
+Server rpc stats:
+calls      badcalls   badclnt    badauth    xdrcall
+0          0          0          0          0       
+
+Client rpc stats:
+calls      retrans    authrefrsh
+555600578   13595      555627399
+
+Client nfs v3:
+null         getattr      setattr      lookup       access       readlink     
+0         0% 293973379 52% 1856050   0% 7182135   1% 76632371 13% 81467     0% 
+read         write        create       mkdir        symlink      mknod        
+81072655 14% 73887980 13% 1216439   0% 90994     0% 66207     0% 570       0% 
+remove       rmdir        rename       link         readdir      readdirplus  
+1269152   0% 104385    0% 1081198   0% 45553     0% 4924830   0% 7652828   1% 
+fsstat       fsinfo       pathconf     commit       
+3261825   0% 10        0% 5         0% 1218507   0% </code></pre>
+  </section>
+  <section>
+    <h2>nfs client</h2>
+        <pre class="fragment"><code># Manual :
+$ mount -t nfs nfs.example.com:/net/nfs /net/nfs
+$ mount -t nfs4 nfs.example.com:/net/nfs /net/nfs</code></pre>
+        <pre class="fragment"><code># in /etc/fstab :
+nfs.example.com:/net/nfs /net/nfs nfs rw 0 0</code></pre>
+  </section>
+</section>
+
+<!--------------------------------------------------
+----------------------------------------------------
+================================================----
+NEW SECTION NEW SECTION NEW SECTION NEW SECTION=----
+================================================----
+----------------------------------------------------
+---------------------------------------------------->
+
+<section>
+  <section>
+    <h1>Samba</h1>
+  </section>
+  <section>
+    <h2>Samba</h2>
+    <p>SMB/CIFS server for windows client</p>
+    <ul class="fragment">
+      <li>Share files</li>
+      <li>Printing services</li>
+    </ul>
+    <p class="fragment"><a hrep="http://www.samba.org/">Samba project</a></p>
+    <p class="fragment"><a hrep="http://www.wikiwand.com/en/Samba_%28software%29">On wikipedia</a></p>
+  </section>
+  <section>
+    <h2>NFS</h2>
+	<p>Installing a Samba server</p>
+        <pre class="fragment"><code>apt-get install samba</code></pre>
+        <pre class="fragment"><code>/etc/init.d/samba start | stop | restart</code></pre>
+        <p class="fragment">Daemons : <br/> - smbd : SMB/CIFS services to clients <br/> - nmbd : naming service for NETBIOS over IP</p>
+  </section>
+  <section>
+    <h2>smb.conf</h2>
+	<p>Samba configuration file using INI format</p>
+        <pre class="fragment"><code>[global]
+	workgroup = MYGROUP
+	server string = Samba Server Version %v
+	log file = /var/log/samba/log.%m
+	max log size = 50
+	security = user
+	passdb backend = tdbsam
+
+
+	load printers = yes
+	cups options = raw
+
+[homes]
+	comment = Home Directories
+	browseable = no
+	writable = yes
+
+[printers]
+	comment = All Printers
+	path = /var/spool/samba
+	browseable = no
+	guest ok = no
+	writable = no
+	printable = yes</code></pre>
+  </section>
+  <section>
+    <h2>testparm</h2>
+	<p>-v option for seing default values</p>
+        <pre class="fragment"><code>$ testparm
+
+Load smb config files from /etc/samba/smb.conf
+rlimit_max: rlimit_max (1024) below minimum Windows limit (16384)
+Processing section "[homes]"
+Processing section "[printers]"
+Processing section "[print$]"
+Loaded services file OK.
+Server role: ROLE_STANDALONE
+Press enter to see a dump of your service definitions
+[...]</code></pre>
+  </section>
+  <section>
+    <h2>smbpasswd</h2>
+	<p class="fragment">Hash algorithm is different from the UNIX one</p>
+	<p class="fragment">Stored in a file dedicated to Samba</p>
+        <pre class="fragment"><code># add a user
+smbpasswd -a user
+
+# change a user password
+smbpasswd user
+
+# delete a user
+smbpasswd -x user</code></pre>
+  </section>
+  <section>
+    <h2>smbstatus</h2>
+        <pre class="fragment"><code>$ smbstatus
+
+Samba version 3.6.3
+PID  Username     Group        Machine
+-------------------------------------------------------------------
+3243 utilisateur  utilisateur  __ffff_127.0.0.1 (::ffff:127.0.0.1)
+
+Service      pid  machine          Connected at
+-------------------------------------------------------
+utilisateur  3243 __ffff_127.0.0.1 Mon Feb 6 12:40:30 2012
+
+No locked files</code></pre>
+  </section>
+  <section>
+    <h2>smbmount</h2>
+        <pre class="fragment"><code># mount -t cifs -o user=openup //localhost/openup /mnt -o</code></pre>
+        <pre class="fragment"><code># apt-get install cifs-utils</code></pre>
+  </section>
+</section>
+
+
+<!--------------------------------------------------
+----------------------------------------------------
+================================================----
+NEW SECTION NEW SECTION NEW SECTION NEW SECTION=----
+================================================----
+----------------------------------------------------
+---------------------------------------------------->
+
+
+<section>
+	<h1>Questions ?</h1>
+</section>
+
+
+
+
+
+
+
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				slideNumber: true,
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+                                
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
